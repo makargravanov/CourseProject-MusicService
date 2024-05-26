@@ -42,9 +42,9 @@ public interface Mapper {
     public static MusicalTrack uploadToData(MusicalTrackUpload data){
         return new MusicalTrack(null,
                 data.getName(),
-                "No",
-                "No",
-                "No",
+                "",
+                "",
+                "",
                 data.getAuthorId(),
                 data.getAlbumId(),
                 data.getGenre(),

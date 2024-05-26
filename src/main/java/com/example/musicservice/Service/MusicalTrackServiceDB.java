@@ -37,12 +37,12 @@ public class MusicalTrackServiceDB {
            throw new NullPointerException("No results found for id: " + id);
         }
     }
-    @Async
-    protected CompletableFuture<MusicalTrack> getMusicalTrackById(Long id) throws IllegalArgumentException, NullPointerException{
+
+    protected MusicalTrack getMusicalTrackById(Long id) throws IllegalArgumentException, NullPointerException{
         if(id==null) throw new IllegalArgumentException("id cannot be null");
         Optional<MusicalTrackEntity> opt = musicalTrackRepository.findById(id);
         if(opt.isPresent()){
-            return CompletableFuture.completedFuture(Mapper.entityToData(opt.get()));
+            return Mapper.entityToData(opt.get());
         }else{
             throw new NullPointerException("No results found for id: " + id);
         }
@@ -65,23 +65,16 @@ public class MusicalTrackServiceDB {
             return Mapper.entityToData(musicalTrackEntities);
         });
     }
-    @Async
-    protected CompletableFuture<ArrayList<MusicalTrack>> getMusicalTrackByName(String name,int page, int size) throws NullPointerException {
+    protected ArrayList<MusicalTrack> getMusicalTrackByName(String name,int page, int size) throws NullPointerException {
         Sort sort = Sort.by(Sort.Direction.ASC, "name");
         PageRequest pageable = PageRequest.of(page, size, sort);
 
-        CompletableFuture<Page<MusicalTrackEntity>> pageResultFuture = CompletableFuture.supplyAsync(() -> {
-            Page<MusicalTrackEntity> pageResult = musicalTrackRepository.findByName(name, pageable).join(); // Extracting the Page from CompletableFuture
-            if (pageResult.isEmpty()) {
+            Page<MusicalTrackEntity> pageResultPage = musicalTrackRepository.findByNameContaining(name, pageable);
+            if (pageResultPage.isEmpty()) {
                 throw new NullPointerException("No results found for name: " + name);
             }
-            return pageResult;
-        });
-
-        return pageResultFuture.thenApply(pageResult -> {
-            ArrayList<MusicalTrackEntity> musicalTrackEntities = new ArrayList<>(pageResult.getContent());
-            return Mapper.entityToData(musicalTrackEntities);
-        });
+            ArrayList<MusicalTrackEntity> pageResultEntity = new ArrayList<>(pageResultPage.getContent());
+            return Mapper.entityToData(pageResultEntity);
     }
     @Async
     protected CompletableFuture<ArrayList<MusicalTrack>> getMusicalTrackByNameOrderByGenre(String name,String genre, int page, int size) throws NullPointerException {
